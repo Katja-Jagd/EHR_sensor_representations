@@ -171,5 +171,5 @@ cython_debug/
 .pypirc
 
 # Folders
-data/
+*data*/
 venv/

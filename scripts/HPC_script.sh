@@ -15,7 +15,7 @@
 ### -- specify that we want the job to get killed if it exceeds 5 GB per core/slot -- 
 #BSUB -M 5GB
 ### -- set walltime limit: hh:mm -- 
-#BSUB -W 48:00 
+#BSUB -W 24:00 
 ### -- set the email address -- 
 # please uncomment the following line and put in your e-mail address,
 # if you want to receive e-mail notifications on a non-default address
@@ -30,10 +30,10 @@
 #BSUB -e Output_%J.err 
 
 # Activate conda enviorment and load modules 
-source /zhome/be/1/138857/miniconda3/etc/profile.d/conda.sh
-conda activate proteinworkshop
-module load gcc/13.1.0-binutils-2.40
+module load python3/3.9.19
+module load cuda/11.8
+module load cudnn/v8.8.0-prod-cuda-11.X
+source /zhome/be/1/138857/EHR_sensor_representations/venv/bin/activate
 
 # Execute command
-python3 main.py --mode train --run /dtu/blackhole/09/138857/special_project/results/run_378/
-python3 main.py --mode test --run /dtu/blackhole/09/138857/special_project/results/run_378/
+python cli.py --output_path="/zhome/be/1/138857/EHR_sensor_representations/output" --model_type=grud --epochs=100 --batch_size=32 --lr=0.0001 --recurrent_dropout=0.2 --recurrent_n_units=128
