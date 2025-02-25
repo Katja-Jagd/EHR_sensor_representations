@@ -173,3 +173,7 @@ cython_debug/
 # Folders
 *data*/
 venv/
+output/
+
+# Files
+modules.sh
