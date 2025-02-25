@@ -15,6 +15,7 @@ from models.early_stopper import EarlyStopping
 from models.deep_set_attention import DeepSetAttentionModel
 from models.grud import GRUDModel
 from models.ip_nets import InterpolationPredictionModel
+from utils import get_one_hot_features
 
 
 def train_test(
@@ -28,7 +29,8 @@ def train_test(
     epochs=300,
     patience=5,
     lr=0.0001,
-    early_stop_criteria="auroc"
+    early_stop_criteria="auroc",
+    expand_features=True,
 ):
 
     train_batch_size = batch_size // 2  # we concatenate 2 batches together
@@ -58,6 +60,7 @@ def train_test(
         batch_size=batch_size,
         lr=lr,
         early_stop_criteria=early_stop_criteria,
+        expand_features=expand_features,
         model_args=model_args
     )
 
@@ -67,6 +70,7 @@ def train_test(
         device=device,
         model_type=model_type,
         model=model,
+        expand_features=expand_features,
         model_args=model_args,
     )
 
@@ -84,6 +88,7 @@ def train(
     lr,
     early_stop_criteria,
     model_args,
+    expand_features,
     **kwargs,  
 ):
     """
@@ -99,7 +104,7 @@ def train(
     # make a new model and train
     if model_type == "grud":
         model = GRUDModel(
-            input_dim=sensor_count,
+            input_dim=sensor_count + (sensor_count * sensor_count if expand_features else 0),
             static_dim=static_size,
             output_dims=2,
             device=device,
@@ -153,6 +158,33 @@ def train(
         loss_list = []
         for batch in tqdm.tqdm(train_dataloader, total=len(train_dataloader)):
             data, times, static, labels, mask, delta = batch
+
+            if expand_features:
+
+                # Get expanded one-hot encoded features, mask, and delta
+                one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                    num_features = data.shape[1], 
+                    batch_size = data.shape[0], 
+                    time_steps = data.shape[2],
+                    device = data.device
+                    )
+                
+                # Concatenate one-hot encoding to data, mask, and delta
+                #print(f"Data shape: {data.shape}")
+                #print(f"One-hot features shape: {one_hot_features.shape}")
+                data = torch.cat([data, one_hot_features], dim=1)
+                #print(f"Shape after concat: {data.shape} ")
+
+                #print(f"Mase shape: {mask.shape}")
+                #print(f"One-hot features shape: {one_hot_mask.shape}")
+                mask = torch.cat([mask, one_hot_mask], dim=1)
+                #print(f"Shape after concat: {mask.shape} ")
+
+                #print(f"Mase shape: {delta.shape}")
+                #print(f"One-hot features shape: {one_hot_delta.shape}")
+                delta = torch.cat([delta, one_hot_delta], dim=1)
+                #print(f"Shape after concat: {delta.shape} ")
+
             if model_type != "grud":
                 data = data.to(device)
                 static = static.to(device)
@@ -183,6 +215,22 @@ def train(
         with torch.no_grad():
             for batch in val_dataloader:
                 data, times, static, labels, mask, delta = batch
+
+                if expand_features:
+
+                    # Get expanded one-hot encoded features, mask, and delta
+                    one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                        num_features = data.shape[1], 
+                        batch_size = data.shape[0], 
+                        time_steps = data.shape[2],
+                        device = data.device
+                        )
+                    
+                    # Concatenate one-hot encoding to data, mask, and delta
+                    data = torch.cat([data, one_hot_features], dim=1)
+                    mask = torch.cat([mask, one_hot_mask], dim=1)
+                    delta = torch.cat([delta, one_hot_delta], dim=1)
+
                 labels_list = torch.cat((labels_list, labels), dim=0)
                 if model_type != "grud":
                     data = data.to(device)
@@ -249,6 +297,7 @@ def test(
     device,
     model_type,
     model,
+    expand_features,
     **kwargs,
 ):
 
@@ -270,6 +319,22 @@ def test(
     with torch.no_grad():
         for batch in test_dataloader:
             data, times, static, labels, mask, delta = batch
+
+            if expand_features:
+
+                # Get expanded one-hot encoded features, mask, and delta
+                one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                    num_features = data.shape[1], 
+                    batch_size = data.shape[0], 
+                    time_steps = data.shape[2],
+                    device = data.device
+                    )
+                
+                # Concatenate one-hot encoding to data, mask, and delta
+                data = torch.cat([data, one_hot_features], dim=1)
+                mask = torch.cat([mask, one_hot_mask], dim=1)
+                delta = torch.cat([delta, one_hot_delta], dim=1)
+
             labels_list = torch.cat((labels_list, labels), dim=0)
             if model_type != "grud":
                 data = data.to(device)
