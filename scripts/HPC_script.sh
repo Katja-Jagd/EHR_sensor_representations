@@ -4,7 +4,7 @@
 ### -- specify queue -- 
 #BSUB -q gpua100
 ### -- set the job Name -- 
-#BSUB -J First_submission_GNN
+#BSUB -J grud_no_sensor_rep
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4 
 #BSUB -gpu "num=1:mode=exclusive_process"
@@ -26,8 +26,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o Output_%J.out 
-#BSUB -e Output_%J.err 
+#BSUB -o /zhome/be/1/138857/EHR_sensor_representations/output/Output_%J.out 
+#BSUB -e /zhome/be/1/138857/EHR_sensor_representations/output/Output_%J.err 
 
 # Activate conda enviorment and load modules 
 module load python3/3.9.19
@@ -36,4 +36,4 @@ module load cudnn/v8.8.0-prod-cuda-11.X
 source /zhome/be/1/138857/EHR_sensor_representations/venv/bin/activate
 
 # Execute command
-python cli.py --output_path="/zhome/be/1/138857/EHR_sensor_representations/output" --model_type=grud --epochs=100 --batch_size=32 --lr=0.0001 --recurrent_dropout=0.2 --recurrent_n_units=128
+python cli.py --output_path="/zhome/be/1/138857/EHR_sensor_representations/output/run_2" --model_type=grud --epochs=100 --batch_size=32 --lr=0.0001 --recurrent_dropout=0.2 --recurrent_n_units=128 --expand_features=True
