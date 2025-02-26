@@ -137,6 +137,7 @@ def core_function(
         if model_type in ("grud", "ipnets"):
             model_settings["recurrent_dropout"] = model_args["recurrent_dropout"]
             model_settings["recurrent_n_units"] = model_args["recurrent_n_units"]
+            model_settings["expand_features"] = model_args["expand_features"]
         if model_type == "ipnets":
             model_settings["ipnets_imputation_stepsize"] = model_args["ipnets_imputation_stepsize"]
             model_settings["ipnets_reconst_fraction"] = model_args["ipnets_reconst_fraction"]

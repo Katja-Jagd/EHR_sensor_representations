@@ -163,9 +163,7 @@ def train(
 
                 # Get expanded one-hot encoded features, mask, and delta
                 one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
-                    num_features = data.shape[1], 
-                    batch_size = data.shape[0], 
-                    time_steps = data.shape[2],
+                    data=data,
                     device = data.device
                     )
                 
@@ -220,11 +218,9 @@ def train(
 
                     # Get expanded one-hot encoded features, mask, and delta
                     one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
-                        num_features = data.shape[1], 
-                        batch_size = data.shape[0], 
-                        time_steps = data.shape[2],
+                        data=data,
                         device = data.device
-                        )
+                    )
                     
                     # Concatenate one-hot encoding to data, mask, and delta
                     data = torch.cat([data, one_hot_features], dim=1)
@@ -324,10 +320,8 @@ def test(
 
                 # Get expanded one-hot encoded features, mask, and delta
                 one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
-                    num_features = data.shape[1], 
-                    batch_size = data.shape[0], 
-                    time_steps = data.shape[2],
-                    device = data.device
+                        data=data,
+                        device = data.device
                     )
                 
                 # Concatenate one-hot encoding to data, mask, and delta
