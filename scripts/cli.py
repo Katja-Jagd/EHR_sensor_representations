@@ -66,6 +66,7 @@ def core_function(
     lr,
     patience,
     early_stop_criteria,
+    expand_features,
     **kwargs
 ):
 
@@ -113,6 +114,7 @@ def core_function(
             "patience": patience,
             "early_stop_criteria": early_stop_criteria,
             "base_path": base_path,
+            "expand_features": expand_features,
             "pooling_fxn": model_args["pooling"],
         }
         if model_type == "transformer":
@@ -137,7 +139,7 @@ def core_function(
         if model_type in ("grud", "ipnets"):
             model_settings["recurrent_dropout"] = model_args["recurrent_dropout"]
             model_settings["recurrent_n_units"] = model_args["recurrent_n_units"]
-            model_settings["expand_features"] = model_args["expand_features"]
+            model_settings["expand_features"] = expand_features
         if model_type == "ipnets":
             model_settings["ipnets_imputation_stepsize"] = model_args["ipnets_imputation_stepsize"]
             model_settings["ipnets_reconst_fraction"] = model_args["ipnets_reconst_fraction"]
@@ -157,6 +159,7 @@ def core_function(
             lr=lr,
             patience=patience,
             early_stop_criteria=early_stop_criteria,
+            expand_features=expand_features,
             model_args=model_args,
         )
 
