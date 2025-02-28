@@ -15,7 +15,7 @@ from models.early_stopper import EarlyStopping
 from models.deep_set_attention import DeepSetAttentionModel
 from models.grud import GRUDModel
 from models.ip_nets import InterpolationPredictionModel
-from utils import get_one_hot_features
+from utils import get_one_hot_features, get_embedding_features
 
 
 def train_test(
@@ -104,7 +104,8 @@ def train(
     # make a new model and train
     if model_type == "grud":
         model = GRUDModel(
-            input_dim=sensor_count + (sensor_count * sensor_count if expand_features else 0),
+            #input_dim=sensor_count + (sensor_count * sensor_count if expand_features else 0), # for one-hot encoding
+            input_dim=sensor_count + (sensor_count * 1024 if expand_features else 0), # for testing first embeddings
             static_dim=static_size,
             output_dims=2,
             device=device,
@@ -162,7 +163,7 @@ def train(
             if expand_features:
 
                 # Get expanded one-hot encoded features, mask, and delta
-                one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                one_hot_features, one_hot_mask, one_hot_delta = get_embedding_features(
                     data=data,
                     device = data.device
                     )
@@ -217,7 +218,7 @@ def train(
                 if expand_features:
 
                     # Get expanded one-hot encoded features, mask, and delta
-                    one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                    one_hot_features, one_hot_mask, one_hot_delta = get_embedding_features(
                         data=data,
                         device = data.device
                     )
@@ -319,7 +320,7 @@ def test(
             if expand_features:
 
                 # Get expanded one-hot encoded features, mask, and delta
-                one_hot_features, one_hot_mask, one_hot_delta = get_one_hot_features(
+                one_hot_features, one_hot_mask, one_hot_delta = get_embedding_features(
                         data=data,
                         device = data.device
                     )
