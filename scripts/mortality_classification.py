@@ -105,7 +105,7 @@ def train(
     if model_type == "grud":
         model = GRUDModel(
             #input_dim=sensor_count + (sensor_count * sensor_count if expand_features else 0), # for one-hot encoding
-            input_dim=sensor_count + (sensor_count * 1024 if expand_features else 0), # for testing first embeddings
+            input_dim=sensor_count + (sensor_count * 384 if expand_features else 0), # for testing first embeddings
             static_dim=static_size,
             output_dims=2,
             device=device,
