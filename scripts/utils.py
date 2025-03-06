@@ -26,7 +26,7 @@ def get_embedding_features(data, device):
     F = data.shape[1]
     T = data.shape[2]
 
-    embeddings = np.load("/zhome/be/1/138857/EHR_sensor_representations/scripts/embeddings/test_embeddings.npy")
+    embeddings = np.load("/zhome/be/1/138857/EHR_sensor_representations/scripts/embeddings/small_embeddings.npy")
 
     # Change dimensions of embeddings 
     embeddings = torch.tensor(embeddings, dtype=torch.float32, device=device).flatten().unsqueeze(0).unsqueeze(2)
