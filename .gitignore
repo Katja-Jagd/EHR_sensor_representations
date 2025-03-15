@@ -175,6 +175,7 @@ cython_debug/
 venv/
 output/
 embeddings/
+wandb/
 
 # Files
 modules.sh
