@@ -16,7 +16,7 @@ from models.deep_set_attention import DeepSetAttentionModel
 from models.grud import GRUDModel
 from models.ip_nets import InterpolationPredictionModel
 from utils import get_one_hot_features, get_embedding_features
-
+import wandb 
 
 def train_test(
     train_pair,
@@ -32,6 +32,10 @@ def train_test(
     early_stop_criteria="auroc",
     expand_features=True,
 ):
+
+    if wandb.run is None:
+        wandb.init(project="test_sweep", resume=True)
+        print("W&B was lost! Reinitializing inside train_test().")
 
     train_batch_size = batch_size // 2  # we concatenate 2 batches together
 
@@ -94,7 +98,6 @@ def train(
     """
     training
     """
-
     iterable_inner_dataloader = iter(train_dataloader)
     test_batch = next(iterable_inner_dataloader)
     max_seq_length = test_batch[0].shape[2]
@@ -249,6 +252,9 @@ def train(
             aupr_score = metrics.average_precision_score(labels_list, probs[:, 1])
 
         val_loss = criterion(predictions_list.cpu(), labels_list)
+        
+        # Log metrics to Weights & Biases
+        wandb.log({"epoch": epoch + 1, "train_loss": accum_loss, "val_loss": val_loss.item(), "val_auroc": auc_score})
 
         with open(f"{output_path}/training_log.csv", "a") as train_log:
             train_log.write(
@@ -284,7 +290,7 @@ def train(
     ax1.plot(training_log["val_roc_auc_score"], label="Training")
     ax1.legend()
     fig.savefig(f"{output_path}/train_curves.jpg")
-
+    
     return val_loss, model
 
 

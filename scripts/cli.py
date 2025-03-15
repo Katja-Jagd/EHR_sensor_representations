@@ -6,6 +6,7 @@ import torch
 import random
 import numpy as np
 import json
+import wandb
 
 
 @click.command()
@@ -56,6 +57,8 @@ import json
 @click.option("--recurrent_dropout", default=0.3)
 @click.option("--recurrent_n_units", default=100)
 @click.option("--expand_features", default=True)
+@click.option("--wandb_sweep", default=False)
+
 def core_function(
     output_path,
     base_path,
@@ -66,7 +69,8 @@ def core_function(
     lr,
     patience,
     early_stop_criteria,
-    expand_features,
+    expand_features, 
+    wandb_sweep,
     **kwargs
 ):
 
@@ -80,9 +84,19 @@ def core_function(
     accum_accuracy = []
     accum_auprc = []
     accum_auroc = []
+    
+    if wandb_sweep:
+        wandb.init(resume=True)  # Initialize W&B only for sweeps
+        config = wandb.config  # Get sweep-configured hyperparameters
+        epochs = config.epochs
+        batch_size = config.batch_size
+        lr = config.lr
+        patience = config.patience
+        kwargs.update(vars(config))
 
-    for split_index in range(1, 6):
+    split_range = range(1, 2) if wandb_sweep else range(1, 6) # only runs first split when sweeping
 
+    for split_index in split_range:
         base_path_new = f"{base_path}/split_{split_index}"
         train_pair, val_data, test_data = load_pad_separate(
             dataset_id, base_path_new, split_index
@@ -101,9 +115,10 @@ def core_function(
         base_run_path = os.path.join(output_path, f"split_{split_index}")
         run_path = base_run_path
         if os.path.exists(run_path):
-            raise ValueError(f"Path {run_path} already exists.")
-        os.mkdir(run_path)
-
+        #    raise ValueError(f"Path {run_path} already exists.")
+             print(f"{run_path} already exists, overwriting for now") #change to log in wandb
+        #os.mkdir(run_path)
+        os.makedirs(run_path, exist_ok = True) #REMOVE THIS EXIST_OK, IS A SOLUTION FOR NOW
         # save model settings
         model_settings = {
             "model_type": model_type,
@@ -168,6 +183,17 @@ def core_function(
         accum_auprc.append(auprc_score)
         accum_auroc.append(auc_score)
 
+        if wandb_sweep:
+            # Log final metrics at the end of each run
+            wandb.log({
+                "final_loss": loss,
+                "final_accuracy": accuracy_score,
+                "final_auprc": auprc_score,
+                "final_auroc": auc_score
+            })
+
+            # Ensure W&B run is properly closed
+            wandb.finish()
     with open(f"{output_path}/summary.json", "w") as f:
         json.dump(
             {
@@ -182,6 +208,23 @@ def core_function(
             }, f, indent=4,
         )
 
-
+def sweep_train():
+    core_function(
+        output_path="./ehr_classification_results/",
+        base_path="./P12data",
+        model_type="grud",  # Default, but W&B will override it
+        epochs=5,  # Default, but W&B will override it
+        dataset_id="physionet2012",
+        batch_size=32,  # Default, but W&B will override it
+        lr=0.0001,  # Default, but W&B will override it
+        patience=10,
+        early_stop_criteria="auroc",
+        expand_features=False,
+        wandb_sweep=True  # Important to enable W&B sweep mode
+    )
 if __name__ == "__main__":
-    core_function()  
+    if wandb.run:  # ✅ Detects if W&B is controlling execution (for sweeps)
+        sweep_train()  # Runs training with hyperparameters from W&B
+    else:
+        core_function()  # Runs normal training when executed manually
+
