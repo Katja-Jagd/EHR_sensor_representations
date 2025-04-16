@@ -56,7 +56,7 @@ import wandb
 @click.option("--ipnets_reconst_fraction", default=0.25)
 @click.option("--recurrent_dropout", default=0.3)
 @click.option("--recurrent_n_units", default=100)
-@click.option("--expand_features", default=True)
+@click.option("--expand_features", default=None)
 @click.option("--wandb_sweep", default=False)
 
 def core_function(
@@ -175,6 +175,7 @@ def core_function(
             patience=patience,
             early_stop_criteria=early_stop_criteria,
             expand_features=expand_features,
+            #wandb_sweep=wandb_sweep,
             model_args=model_args,
         )
 
@@ -219,7 +220,7 @@ def sweep_train():
         lr=0.0001,  # Default, but W&B will override it
         patience=10,
         early_stop_criteria="auroc",
-        expand_features=False,
+        expand_features=None,
         wandb_sweep=True  # Important to enable W&B sweep mode
     )
 if __name__ == "__main__":
